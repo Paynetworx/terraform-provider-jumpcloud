@@ -4,10 +4,10 @@ go 1.17
 
 require (
 	github.com/TheJumpCloud/jcapi-go v3.0.0+incompatible
-	github.com/go-resty/resty/v2 v2.4.0
+	github.com/go-resty/resty/v2 v2.7.0
 	github.com/hashicorp/terraform-plugin-docs v0.3.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
-	golang.org/x/net v0.0.0-20210326060303-6b1517762897
+	golang.org/x/net v0.0.0-20211029224645-99673261e6eb
 )
 
 require (
@@ -78,7 +78,7 @@ require (
 	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
-	golang.org/x/text v0.3.5 // indirect
+	golang.org/x/text v0.3.6 // indirect
 	golang.org/x/tools v0.0.0-20200713011307-fd294ab11aed // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
 	google.golang.org/api v0.29.0 // indirect
