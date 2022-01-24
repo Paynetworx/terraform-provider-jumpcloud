@@ -176,8 +176,6 @@ func resourceApplicationRead(_ context.Context, d *schema.ResourceData, meta int
 	}
 	d.Set("constant_attributes",constants)
 	d.Set("acs_url",response.Config.AcsUrl.Value)
-	d.Set("idp_certificate",response.Config.IdpCertificate.Value)
-	d.Set("idp_private_key", response.Config.IdpPrivateKey.Value)
 	d.Set("idp_entity_id", response.Config.IdpEntityId.Value)
 	d.Set("sp_entity_id", response.Config.SpEntityId.Value)
 	d.Set("name",response.Name)
