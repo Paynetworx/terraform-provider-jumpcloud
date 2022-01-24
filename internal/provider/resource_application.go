@@ -129,11 +129,11 @@ func resourceApplicationCreate(ctx context.Context, d *schema.ResourceData, meta
 		"body": payload,
 	}
 
+	log.Println("[INFO] body=",request["body"])	
 	returnStruct, _, err := client.ApplicationsApi.ApplicationsPost(context.TODO(), request)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	log.Println("[INFO] id=",returnStruct.Id)	
 	d.SetId(returnStruct.Id)
 	return resourceApplicationRead(ctx, d, meta)
 }
