@@ -134,6 +134,7 @@ func resourceApplicationCreate(ctx context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	log.Println("[INFO] id=",returnStruct.Id)	
 	d.SetId(returnStruct.Id)
 	return resourceApplicationRead(ctx, d, meta)
 }
