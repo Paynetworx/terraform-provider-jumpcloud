@@ -231,10 +231,10 @@ func resourceApplicationDelete(_ context.Context, d *schema.ResourceData, meta i
 }
 
 type Application struct {
-	Active bool `json:"active:omitempty"`
+	Active bool `json:"active,omitempty"`
 
 	Id string `json:"_id,omitempty"`
-
+	
 	Beta bool `json:"beta,omitempty"`
 
 	Config *jcapiv1.ApplicationConfig `json:"config,omitempty"`
