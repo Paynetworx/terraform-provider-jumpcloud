@@ -1,6 +1,13 @@
 resource "jumpcloud_application" "example" {
-  display_label        = "My AWS Account"
-  sso_url              = "https://sso.jumpcloud.com/saml2/example-application"
-  saml_role_attribute  = "arn:aws:iam::AWS_ACCOUNT_ID:role/MY_ROLE,arn:aws:iam::AWS_ACCOUNT_ID:saml-provider/MY_SAML_PROVIDER"
-  aws_session_duration = 432000
+  name:"awsclientvpn-test",
+  display_label:"AwsVpnTerraform-test",
+  beta:false,
+  sso_url:"https://sso.jumpcloud.com/saml2/awsclientvpn-test",
+  learn_more:"https://support.jumpcloud.com/support/s/article/Single-Sign-On-SSO-with-AWS-Client-VPN",
+  idp_certificate:"",
+  idp_private_key:"",
+  idp_entity_id:"JumpCloud",
+  sp_entity_id:"urn:amazon:webservices:clientvpn",
+  acs_url:"http://127.0.0.1:35001",
+  constant_attributes:[],
 }
