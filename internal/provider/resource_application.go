@@ -230,7 +230,29 @@ func resourceApplicationDelete(_ context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-func generateApplicationPayload(d *schema.ResourceData) jcapiv1.Application {
+type Application struct {
+	Active bool `json:"active:omitempty"`
+
+	Id string `json:"_id,omitempty"`
+
+	Beta bool `json:"beta,omitempty"`
+
+	Config *jcapiv1.ApplicationConfig `json:"config,omitempty"`
+
+	DisplayLabel string `json:"displayLabel,omitempty"`
+
+	DisplayName string `json:"displayName,omitempty"`
+
+	LearnMore string `json:"learnMore,omitempty"`
+
+	Name string `json:"name,omitempty"`
+
+	Organization string `json:"organization,omitempty"`
+
+	SsoUrl string `json:"ssoUrl,omitempty"`
+}
+
+func generateApplicationPayload(d *schema.ResourceData) Application {
 	constants := []jcapiv1.ApplicationConfigConstantAttributesValue{}
 	for _, data_raw := range d.Get("constant_attributes").([]interface{}) {
 		data := data_raw.(map[string]interface{})
@@ -243,8 +265,9 @@ func generateApplicationPayload(d *schema.ResourceData) jcapiv1.Application {
 		constant.Visible = data["visible"].([]interface{})[0].(bool)
 		constants = append(constants, constant)
 	}
-	return jcapiv1.Application{
+	return Application{
 		// TODO clearify if previous Active: true is translated to Beta: false
+		Active:		  true,
 		Beta:         d.Get("beta").(bool),
 		Name:         d.Get("name").(string),
 		DisplayLabel: d.Get("display_label").(string),
