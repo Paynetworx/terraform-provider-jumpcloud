@@ -230,27 +230,7 @@ func resourceApplicationDelete(_ context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-type ApplicationFull struct {
-	Id string `json:"_id,omitempty"`
-
-	Beta bool `json:"beta,omitempty"`
-
-	Config *jcapiv1.ApplicationConfig `json:"config,omitempty"`
-
-	DisplayLabel string `json:"displayLabel,omitempty"`
-
-	DisplayName string `json:"displayName,omitempty"`
-
-	LearnMore string `json:"learnMore,omitempty"`
-
-	Name string `json:"name,omitempty"`
-
-	Organization string `json:"organization,omitempty"`
-
-	SsoUrl string `json:"ssoUrl,omitempty"`
-}
-
-func generateApplicationPayload(d *schema.ResourceData) ApplicationFull {
+func generateApplicationPayload(d *schema.ResourceData) jcapiv1.Application {
 	constants := []jcapiv1.ApplicationConfigConstantAttributesValue{}
 	for _, data_raw := range d.Get("constant_attributes").([]interface{}) {
 		data := data_raw.(map[string]interface{})
@@ -263,7 +243,7 @@ func generateApplicationPayload(d *schema.ResourceData) ApplicationFull {
 		constant.Visible = data["visible"].([]interface{})[0].(bool)
 		constants = append(constants, constant)
 	}
-	out := ApplicationFull{
+	return := jcapiv1.Application{
 		// TODO clearify if previous Active: true is translated to Beta: false
 		Beta:         d.Get("beta").(bool),
 		Name:         d.Get("name").(string),
@@ -321,5 +301,4 @@ func generateApplicationPayload(d *schema.ResourceData) ApplicationFull {
 			},
 		},
 	}
-	return out
 }
