@@ -243,7 +243,7 @@ func generateApplicationPayload(d *schema.ResourceData) jcapiv1.Application {
 		constant.Visible = data["visible"].([]interface{})[0].(bool)
 		constants = append(constants, constant)
 	}
-	return := jcapiv1.Application{
+	return jcapiv1.Application{
 		// TODO clearify if previous Active: true is translated to Beta: false
 		Beta:         d.Get("beta").(bool),
 		Name:         d.Get("name").(string),
