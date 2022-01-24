@@ -36,8 +36,8 @@ func resourceApplication() *schema.Resource {
 			"beta": {
 				Description: "",
 				Type:        schema.TypeBool,
-				Required:    false,
 				Default:	 false,
+				Optional:      true,
 			},
 			"display_label": {
 				Description: "Name of the application to display",
@@ -52,12 +52,12 @@ func resourceApplication() *schema.Resource {
 			"learn_more": {
 				Description: "",
 				Type:        schema.TypeString,
-				Required:    false,
+				Optional:	 true,
 			},
 			"constant_attributes":{
 				Description:	"",
 				Type:			schema.TypeList,
-				Required:		false,
+				Optional:	    true,
 				Elem:			&schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name":{
@@ -70,17 +70,17 @@ func resourceApplication() *schema.Resource {
 						},
 						"read_only":{
 							Type: schema.TypeBool,
-							Required: false,
+							Optional: true,
 							Default: false,
 						},
 						"required":{
 							Type: schema.TypeBool,
-							Required: false,
+							Optional: true,
 							Default: false,
 						},
 						"visible":{
 							Type: schema.TypeBool,
-							Required: false,
+							Optional: true,
 							Default: true,
 						},
 					},
