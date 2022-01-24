@@ -233,13 +233,15 @@ func resourceApplicationDelete(_ context.Context, d *schema.ResourceData, meta i
 
 func generateApplicationPayload(d *schema.ResourceData) jcapiv1.Application {
 	constants := []jcapiv1.ApplicationConfigConstantAttributesValue{}
-	for _, data := range d.Get("constant_attributes").([]schema.ResourceData) {
+	for _, data_raw := range d.Get("constant_attributes").([]interface{}) {
+		data := data_raw.(map[string]interface{})
 		constant := jcapiv1.ApplicationConfigConstantAttributesValue{}
-		constant.Name = data.Get("name").(string)
-		constant.Value = data.Get("value").(string)
-		constant.ReadOnly= data.Get("read_only").(bool)
-		constant.Required = data.Get("required").(bool)
-		constant.Visible = data.Get("visible").(bool)
+
+		constant.Name = data["name"].([]interface{})[0].(string)
+		constant.Value = data["value"].([]interface{})[0].(string)
+		constant.ReadOnly= data["read_only"].([]interface{})[0].(bool)
+		constant.Required = data["required"].([]interface{})[0].(bool)
+		constant.Visible = data["visible"].([]interface{})[0].(bool)
 		constants = append(constants, constant)
 	}
 	return jcapiv1.Application{
