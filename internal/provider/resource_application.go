@@ -9,10 +9,13 @@ import (
 	"log"
 )
 
-const (
-	AttributeNameAwsSessionDuration = "https://aws.amazon.com/SAML/Attributes/SessionDuration"
-	AttributeNameAwsRole            = "https://aws.amazon.com/SAML/Attributes/Role"
-)
+type Constant struct {
+	name string
+	value string
+	read_only bool
+	required bool
+	visible bool
+}
 
 func resourceApplication() *schema.Resource {
 	return &schema.Resource{
@@ -25,6 +28,17 @@ func resourceApplication() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			"name": {
+				Description: "Name of the application",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
+			"beta": {
+				Description: "",
+				Type:        schema.TypeBool,
+				Required:    false,
+				Default:	 false,
+			},
 			"display_label": {
 				Description: "Name of the application to display",
 				Type:        schema.TypeString,
@@ -35,13 +49,65 @@ func resourceApplication() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"saml_role_attribute": {
-				Description: "Value of the `https://aws.amazon.com/SAML/Attributes/Role` attribute.",
+			"learn_more": {
+				Description: "",
+				Type:        schema.TypeString,
+				Required:    false,
+			},
+			"constant_attributes":{
+				Description:	"",
+				Type:			schema.TypeList,
+				Required:		false,
+				Elem:			&schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name":{
+							Type: schema.TypeString,
+							Required: true,
+						},
+						"value":{
+							Type: schema.TypeString,
+							Required: true,
+						},
+						"read_only":{
+							Type: schema.TypeBool,
+							Required: false,
+							Default: false,
+						},
+						"required":{
+							Type: schema.TypeBool,
+							Required: false,
+							Default: false,
+						},
+						"visible":{
+							Type: schema.TypeBool,
+							Required: false,
+							Default: true,
+						},
+					},
+				},
+			},
+			"idp_certificate":{
+				Description: "",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"aws_session_duration": {
-				Description: "Value of the `https://aws.amazon.com/SAML/Attributes/SessionDuration` attribute.",
+			"idp_entity_id":{
+				Description: "",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
+			"idp_private_key":{
+				Description: "",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
+			"sp_entity_id":{
+				Description: "",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
+			"acs_url":{
+				Description: "",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -58,7 +124,7 @@ func resourceApplicationCreate(ctx context.Context, d *schema.ResourceData, meta
 	configv1 := convertV2toV1Config(meta.(*jcapiv2.Configuration))
 	client := jcapiv1.NewAPIClient(configv1)
 
-	payload := generateAwsPayload(d)
+	payload := generateApplicationPayload(d)
 	request := map[string]interface{}{
 		"body": payload,
 	}
@@ -97,19 +163,24 @@ func resourceApplicationRead(_ context.Context, d *schema.ResourceData, meta int
 	}
 
 	constantAttributeValues := response.Config.ConstantAttributes.Value
+	constants := []Constant{}
 	for _, el := range constantAttributeValues {
-		if el.Name == AttributeNameAwsSessionDuration {
-			if err := d.Set("aws_session_duration", el.Value); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		if el.Name == AttributeNameAwsRole {
-			if err := d.Set("saml_role_attribute", el.Value); err != nil {
-				return diag.FromErr(err)
-			}
-		}
+		constant := Constant{}	
+		constant.name = el.Name
+		constant.read_only = el.ReadOnly
+		constant.value = el.Value
+		constant.required = el.Required
+		constant.visible = el.Visible 
+		constants = append(constants, constant)
 	}
+	d.Set("constant_attributes",constants)
+	d.Set("acs_url",response.Config.AcsUrl.Value)
+	d.Set("idp_certificate",response.Config.IdpCertificate.Value)
+	d.Set("idp_private_key", response.Config.IdpPrivateKey.Value)
+	d.Set("idp_entity_id", response.Config.IdpEntityId.Value)
+	d.Set("sp_entity_id", response.Config.SpEntityId.Value)
+	d.Set("name",response.Name)
+	d.Set("beta",response.Beta)
 
 	if response.Id != "" {
 		log.Println("[INFO] response ID is ", response.Id)
@@ -135,7 +206,7 @@ func resourceApplicationUpdate(ctx context.Context, d *schema.ResourceData, meta
 	configv1 := convertV2toV1Config(meta.(*jcapiv2.Configuration))
 	client := jcapiv1.NewAPIClient(configv1)
 
-	payload := generateAwsPayload(d)
+	payload := generateApplicationPayload(d)
 	request := map[string]interface{}{
 		"body": payload,
 	}
@@ -160,25 +231,72 @@ func resourceApplicationDelete(_ context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-func generateAwsPayload(d *schema.ResourceData) jcapiv1.Application {
+func generateApplicationPayload(d *schema.ResourceData) jcapiv1.Application {
+	constants := []jcapiv1.ApplicationConfigConstantAttributesValue{}
+	for _, data := range d.Get("constant_attributes").([]Constant) {
+		constant := jcapiv1.ApplicationConfigConstantAttributesValue{}
+		constant.Name = data.name
+		constant.Value = data.value
+		constant.ReadOnly= data.read_only
+		constant.Required = data.required
+		constant.Visible = data.visible
+		constants = append(constants, constant)
+	}
 	return jcapiv1.Application{
 		// TODO clearify if previous Active: true is translated to Beta: false
-		Beta:         false,
-		Name:         "aws",
+		Beta:         d.Get("beta").(bool),
+		Name:         d.Get("name").(string),
 		DisplayLabel: d.Get("display_label").(string),
 		SsoUrl:       d.Get("sso_url").(string),
 		Config: &jcapiv1.ApplicationConfig{
+			AcsUrl: &jcapiv1.ApplicationConfigAcsUrl{
+				Type_:"text",
+				Label:"ACS Url:",
+				Value:d.Get("acs_url").(string),
+				Required:true,
+				Visible:true,
+				ReadOnly:false,
+				Position:4,
+			},
 			ConstantAttributes: &jcapiv1.ApplicationConfigConstantAttributes{
-				Value: []jcapiv1.ApplicationConfigConstantAttributesValue{
-					{
-						Name:  AttributeNameAwsSessionDuration,
-						Value: d.Get("aws_session_duration").(string),
-					},
-					{
-						Name:  AttributeNameAwsRole,
-						Value: d.Get("saml_role_attribute").(string),
-					},
-				},
+				Value: constants,
+			},
+			DatabaseAttributes: &jcapiv1.ApplicationConfigDatabaseAttributes{},
+			IdpCertificate:&jcapiv1.ApplicationConfigAcsUrl{
+				Type_:"file",
+				Label:"IdP Certificate:",
+				Value:d.Get("idp_certificate").(string),
+				Required:true,
+				Visible:true,
+				ReadOnly:false,
+				Position:2,
+			},
+			IdpEntityId:&jcapiv1.ApplicationConfigAcsUrl{
+				Type_:"text",
+				Label:"IdP Entity ID:",
+				Value:d.Get("idp_entity_id").(string),
+				Required:true,
+				Visible:true,
+				ReadOnly:false,
+				Position:0,
+			},
+			IdpPrivateKey:&jcapiv1.ApplicationConfigAcsUrl{
+				Type_:"file",
+				Label:"IdP Private Key:",
+				Value:d.Get("idp_private_key").(string),
+				Required:true,
+				Visible:true,
+				ReadOnly:false,
+				Position:1,
+			},
+			SpEntityId:&jcapiv1.ApplicationConfigAcsUrl{
+				Type_:"text",
+				Label:"SP Entity ID:",
+				Value:d.Get("sp_entity_id").(string),
+				Required:true,
+				Visible:true,
+				ReadOnly:false,
+				Position:4,
 			},
 		},
 	}
