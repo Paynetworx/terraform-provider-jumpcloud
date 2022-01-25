@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
-	jcapiv1 "github.com/TheJumpCloud/jcapi-go/v1"
+	jcapiv1 "github.com/Paynetworx/jcapi-go/v1"
 	jcapiv2 "github.com/TheJumpCloud/jcapi-go/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )

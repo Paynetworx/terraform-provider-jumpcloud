@@ -1,7 +1,7 @@
 package provider
 
 import (
-	jcapiv1 "github.com/TheJumpCloud/jcapi-go/v1"
+	jcapiv1 "github.com/Paynetworx/jcapi-go/v1"
 	jcapiv2 "github.com/TheJumpCloud/jcapi-go/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -245,6 +245,7 @@ func generateApplicationPayload(d *schema.ResourceData) jcapiv1.Application {
 	}
 	return jcapiv1.Application{
 		// TODO clearify if previous Active: true is translated to Beta: false
+		Active:		  true,
 		Beta:         d.Get("beta").(bool),
 		Name:         d.Get("name").(string),
 		DisplayLabel: d.Get("display_label").(string),
