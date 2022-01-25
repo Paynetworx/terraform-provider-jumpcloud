@@ -90,6 +90,7 @@ func resourceApplication() *schema.Resource {
 				Description: "",
 				Type:        schema.TypeString,
 				Required:    true,
+				Sensitive:   true,
 			},
 			"idp_entity_id":{
 				Description: "",
@@ -100,6 +101,7 @@ func resourceApplication() *schema.Resource {
 				Description: "",
 				Type:        schema.TypeString,
 				Required:    true,
+				Sensitive:	 true,
 			},
 			"sp_entity_id":{
 				Description: "",
