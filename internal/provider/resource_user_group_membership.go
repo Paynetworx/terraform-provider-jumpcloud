@@ -2,8 +2,10 @@ package provider
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"strings"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	jcapiv2 "github.com/TheJumpCloud/jcapi-go/v2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -83,25 +85,34 @@ func resourceUserGroupMembershipRead(_ context.Context, d *schema.ResourceData, 
 	config := meta.(*jcapiv2.Configuration)
 	client := jcapiv2.NewAPIClient(config)
 
-	optionals := map[string]interface{}{
-		"group_id": d.Get("group_id").(string),
-		"limit":    int32(100),
-	}
+	for i := 0; i < 20; i++ { // Prevent infite loop
+		optionals := map[string]interface{}{
+			"group_id": d.Get("group_id").(string),
+			"limit":    int32(100),
+			"skip":     int32(i * 100),
+		}
 
-	graphconnect, _, err := client.UserGroupMembersMembershipApi.GraphUserGroupMembersList(
-		context.TODO(), d.Get("group_id").(string), "", "", optionals)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+		graphconnect, _, err := client.UserGroupMembersMembershipApi.GraphUserGroupMembersList(
+			context.TODO(), d.Get("group_id").(string), "", "", optionals)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	// The user_ids are hidden in a super-complex construct, see
-	// https://github.com/TheJumpCloud/jcapi-go/blob/master/v2/docs/GraphConnection.md
-	for _, v := range graphconnect {
-		if v.To.Id == d.Get("user_id") {
-			// Found - As we not have a JC-ID for the membership we simply store
-			// the concatenation of group ID and user ID as our membership ID
-			d.SetId(d.Get("group_id").(string) + "/" + d.Get("user_id").(string))
-			return nil
+		// The user_ids are hidden in a super-complex construct, see
+		// https://github.com/TheJumpCloud/jcapi-go/blob/master/v2/docs/GraphConnection.md
+		for _, v := range graphconnect {
+			if v.To.Id == d.Get("user_id") {
+				// Found - As we not have a JC-ID for the membership we simply store
+				// the concatenation of group ID and user ID as our membership ID
+				d.SetId(d.Get("group_id").(string) + "/" + d.Get("user_id").(string))
+				return nil
+			}
+		}
+
+		if len(graphconnect) < 100 {
+			break
+		} else {
+			time.Sleep(100 * time.Millisecond)
 		}
 	}
 	// Element does not exist in actual Infrastructure, hence unsetting the ID
